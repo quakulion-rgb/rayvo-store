@@ -1,15 +1,33 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 
+const GHANA_REGIONS = [
+  'Ashanti',
+  'Greater Accra',
+  'Central',
+  'Eastern',
+  'Northern',
+  'Savannah',
+  'North Eastern',
+  'Oti',
+  'Upper East',
+  'Upper West',
+  'Volta',
+  'Western',
+  'Ahafo',
+  'Bono',
+  'Bono East',
+];
+
 export default function AddressManager({ onClose, addresses = [], onSaveAddress, onDeleteAddress }) {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    street: '',
+    region: 'Greater Accra',
     city: '',
+    street: '',
     zipCode: '',
-    country: '',
     isDefault: false,
   });
 
@@ -21,19 +39,43 @@ export default function AddressManager({ onClose, addresses = [], onSaveAddress,
     }));
   };
 
+  const validateForm = () => {
+    if (!formData.fullName.trim()) {
+      alert('Please enter your full name');
+      return false;
+    }
+    if (!formData.phone.trim()) {
+      alert('Please enter your phone number');
+      return false;
+    }
+    // Validate Ghana phone numbers (starts with 0, 10 digits)
+    if (!/^0[0-9]{9}$/.test(formData.phone)) {
+      alert('Please enter a valid Ghana phone number (e.g., 0201234567)');
+      return false;
+    }
+    if (!formData.street.trim()) {
+      alert('Please enter your street address');
+      return false;
+    }
+    if (!formData.city.trim()) {
+      alert('Please enter your city');
+      return false;
+    }
+    return true;
+  };
+
   const handleSaveAddress = async () => {
-    if (!formData.fullName || !formData.phone || !formData.street) {
-      alert('Please fill in all required fields');
+    if (!validateForm()) {
       return;
     }
     await onSaveAddress(formData);
     setFormData({
       fullName: '',
       phone: '',
-      street: '',
+      region: 'Greater Accra',
       city: '',
+      street: '',
       zipCode: '',
-      country: '',
       isDefault: false,
     });
     setIsAddingNew(false);
@@ -68,9 +110,11 @@ export default function AddressManager({ onClose, addresses = [], onSaveAddress,
               <p className="font-semibold text-gray-800">{address.fullName}</p>
               <p className="text-sm text-gray-600">{address.phone}</p>
               <p className="text-sm text-gray-600">
-                {address.street}, {address.city}, {address.zipCode}
+                {address.street}, {address.city}
               </p>
-              <p className="text-sm text-gray-600">{address.country}</p>
+              <p className="text-sm text-gray-600">
+                {address.region}, Ghana {address.zipCode && `- ${address.zipCode}`}
+              </p>
               <button
                 onClick={() => onDeleteAddress(address.id)}
                 className="mt-2 text-red-500 text-xs font-semibold flex items-center gap-1 hover:underline"
@@ -93,54 +137,66 @@ export default function AddressManager({ onClose, addresses = [], onSaveAddress,
           </div>
         ) : (
           <div className="p-4 border-t border-gray-200 space-y-3">
+            <h3 className="font-semibold text-gray-800 mb-3">Add Ghana Address</h3>
+
             <input
               type="text"
               name="fullName"
               placeholder="Full Name"
               value={formData.fullName}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
             />
+
             <input
               type="tel"
               name="phone"
-              placeholder="Phone Number"
+              placeholder="Phone (e.g., 0201234567)"
               value={formData.phone}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
             />
-            <input
-              type="text"
-              name="street"
-              placeholder="Street Address"
-              value={formData.street}
+
+            <select
+              name="region"
+              value={formData.region}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm bg-white"
+            >
+              {GHANA_REGIONS.map((region) => (
+                <option key={region} value={region}>
+                  {region}
+                </option>
+              ))}
+            </select>
+
             <input
               type="text"
               name="city"
-              placeholder="City"
+              placeholder="City (e.g., Accra, Kumasi, Tema)"
               value={formData.city}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
             />
+
+            <input
+              type="text"
+              name="street"
+              placeholder="Street Address / House Number"
+              value={formData.street}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+            />
+
             <input
               type="text"
               name="zipCode"
-              placeholder="Zip Code"
+              placeholder="Postal Code (Optional)"
               value={formData.zipCode}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
             />
-            <input
-              type="text"
-              name="country"
-              placeholder="Country"
-              value={formData.country}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
